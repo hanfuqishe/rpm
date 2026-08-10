@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>递归对等模型 - 交互式可视化</title>
+    <title>VXLAN - Recursive Peer Model - Interactive Visualization</title>
     <style>
         * {
             margin: 0;
@@ -44,7 +44,8 @@
         .subtitle {
             text-align: center;
             color: #8b949e;
-            font-size: 15px;
+            font-size: 14px;
+            line-height: 1.7;
             margin-bottom: 35px;
             border-bottom: 1px solid #21262d;
             padding-bottom: 18px;
@@ -60,7 +61,7 @@
             align-items: stretch;
         }
 
-        /* ---------- 左侧：协议栈 ---------- */
+        /* ---------- Left: protocol stack ---------- */
         .left-panel {
             flex: 1;
             min-width: 0;
@@ -111,7 +112,7 @@
             border-right-color: #2d2d3a;
         }
 
-        /* 静态层（数据层）：扁平、不可展开，用虚线边框区分 */
+        /* Static layer (data layer): flat, not expandable, dashed border to distinguish */
         .layer-static {
             border-style: dashed;
             border-color: #3d3d4a;
@@ -172,13 +173,13 @@
             justify-content: center;
             padding: 4px 16px;
             gap: 4px;
-            height: 40px; /* 层高 44 - 上下边框 4，使两行在层内垂直居中 */
+            height: 40px; /* layer height 44 - top/bottom borders 4, centers two rows vertically */
             transition: all 0.4s ease;
             position: relative;
         }
 
         .layer.active .layer-body {
-            height: 84px; /* 层高 88 - 上下边框 4，使两行在层内垂直居中 */
+            height: 84px; /* layer height 88 - top/bottom borders 4, centers two rows vertically */
             padding: 8px 16px;
             justify-content: center;
         }
@@ -197,7 +198,7 @@
             overflow: hidden;
             margin: 0;
             padding: 0;
-            display: none; /* 彻底移出 flex 布局，避免残留 gap 使两行下移 */
+            display: none; /* fully remove from flex layout to avoid leftover gap shifting the rows */
         }
 
         .layer-body .inner-row {
@@ -280,7 +281,7 @@
             font-size: 12px;
         }
 
-        /* ---------- 左侧展开时的分隔线 ---------- */
+        /* ---------- Divider shown when the left layer is expanded ---------- */
         .layer-divider {
             display: none;
             position: absolute;
@@ -297,7 +298,7 @@
             display: block;
         }
 
-        /* ---------- 右侧：标尺（无标题栏） ---------- */
+        /* ---------- Right: ruler (no header) ---------- */
         .right-panel {
             flex: 0 0 170px;
             min-width: 150px;
@@ -315,7 +316,7 @@
             border-color: #58a6ff66;
         }
 
-        /* 无悬停时：标尺以很暗的色调显示 */
+        /* When nothing is hovered: the ruler is shown in a very dim palette */
         .right-panel.dimmed .ruler-line {
             background: #21262d;
         }
@@ -340,7 +341,7 @@
             transition: all 0.4s ease;
         }
 
-        /* 主竖线 - 在左1/4处 */
+        /* Main vertical line - at the left quarter */
         .ruler-line {
             position: absolute;
             left: 25%;
@@ -353,7 +354,7 @@
             border-radius: 2px;
         }
 
-        /* 十字线 - 水平线 + 竖线标记 */
+        /* Crosshair - horizontal line + vertical mark */
         .ruler-cross {
             position: absolute;
             left: 0;
@@ -367,7 +368,7 @@
             pointer-events: none;
         }
 
-        /* 水平线 - 从左侧延伸到右侧（虚线） */
+        /* Horizontal line - extends from left to right (dashed) */
         .ruler-cross .hline {
             position: absolute;
             left: 5%;
@@ -377,7 +378,7 @@
             transition: border-color 0.4s;
         }
 
-        /* 竖线标记 - 在25%位置的一个小竖线 */
+        /* Vertical mark - a small vertical dash at 25% */
         .ruler-cross .vmark {
             position: absolute;
             left: 25%;
@@ -390,7 +391,7 @@
             border-radius: 1px;
         }
 
-        /* 文字标签（统一白色，不随状态变化） */
+        /* Text labels (always white, independent of state) */
         .ruler-label {
             position: absolute;
             left: 32%;
@@ -461,11 +462,11 @@
                 font-size: 14px;
             }
             .layer-body {
-                height: 34px; /* 层高 38 - 上下边框 4 */
+                height: 34px; /* layer height 38 - top/bottom borders 4 */
                 padding: 2px 10px;
             }
             .layer.active .layer-body {
-                height: 72px; /* 层高 76 - 上下边框 4 */
+                height: 72px; /* layer height 76 - top/bottom borders 4 */
                 padding: 6px 10px;
             }
             .inner-row {
@@ -490,151 +491,202 @@
 <body>
 
 <div class="container">
-    <h1>🧩 递归对等模型</h1>
+    <h1>🌉 VXLAN</h1>
     <div class="subtitle">
-        每个中间层协议自身拥有 <strong>四层结构</strong> <p>每个协议内部可拆分为数据链路层（实现直接相邻的节点间通信）和网络层（在不直接相邻的节点间转发）。<p>所有上层协议统一作为传输层，所有下层协议统一视为承载层。<p>最下层没有承载层，最上层的数据层不再有内部层次，作为两个递归方向的终止条件。
+        Every intermediate protocol carries its own <strong>four-part structure</strong> — a
+        <strong>data link layer</strong> (communication between directly adjacent nodes) and a
+        <strong>network layer</strong> (forwarding between non-adjacent nodes).<br />
+        All protocols above a given layer are uniformly treated as its <strong>transport layer</strong>;
+        all protocols below it are uniformly treated as its <strong>bearer layer</strong>.<br />
+        The topmost <strong>data layer</strong> has no internal sublayers, and the bottommost layer has no bearer —
+        the two termination conditions of the recursion.<br />
+        Here <strong>VXLAN carries tenant L2 traffic</strong>: the inner stack (Inner IP → Inner Ethernet) is the
+        tenant's frames, and the overlay (VXLAN → UDP → Outer IP) rides over the physical underlay network
+        (Outer Ethernet → Coding/Modulation → Medium).
     </div>
 
     <div class="main-layout">
 
-        <!-- ====== 左侧：协议栈 ====== -->
+        <!-- ====== Left: protocol stack ====== -->
         <div class="left-panel">
             <div class="stack" id="stack">
 
-                <!-- 数据层（静态：不展开，无链路层/网络层） -->
+                <!-- Data layer (static: not expandable, no link/network sublayers) -->
                 <div class="layer layer-static" id="layer-data" data-protocol="data">
                     <div class="layer-name-bar">
                         <span class="icon">📄</span>
-                        <span class="name">数据层</span>
-                        <span class="badge">原始数据</span>
+                        <span class="name">Data layer</span>
+                        <span class="badge">Raw Payload</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 原始数据 —</span>
+                        <span class="collapsed-hint">— Tenant Payload —</span>
                     </div>
                     <div class="layer-divider" id="divider-data"></div>
                 </div>
 
-                <!-- HTTP层 -->
-                <div class="layer" id="layer-app" data-protocol="app">
+                <!-- Inner IP (tenant's IP packet) -->
+                <div class="layer" id="layer-innerip" data-protocol="innerip">
                     <div class="layer-name-bar">
-                        <span class="icon">📦</span>
-                        <span class="name">HTTP层</span>
-                        <span class="badge">超文本传输</span>
+                        <span class="icon">🏠</span>
+                        <span class="name">Inner IP</span>
+                        <span class="badge">Tenant Network</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 悬停展开 —</span>
-                        <div class="inner-row net-layer null-layer">
-                            <span class="tag">🌐 网络</span>
-                            <span class="desc"><span class="null-box">空</span></span>
+                        <span class="collapsed-hint">— Hover to expand —</span>
+                        <div class="inner-row net-layer">
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">Route across the tenant VPC subnet</span> <span class="dim">(overlay addressing)</span></span>
                         </div>
                         <div class="inner-row link-layer">
-                            <span class="tag">📦 链路</span>
-                            <span class="desc"><span class="hl">URL/方法</span> <span class="hl">状态码</span> <span class="dim">（传输数据，不理解内容）</span></span>
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">Header Checksum</span> <span class="hl">Protocol Demux</span> <span class="hl">TTL</span></span>
                         </div>
                     </div>
-                    <div class="layer-divider" id="divider-app"></div>
+                    <div class="layer-divider" id="divider-innerip"></div>
                 </div>
 
-                <!-- TCP -->
-                <div class="layer" id="layer-tcp" data-protocol="tcp">
+                <!-- Inner Ethernet (tenant's L2 frame) -->
+                <div class="layer" id="layer-innereth" data-protocol="innereth">
                     <div class="layer-name-bar">
-                        <span class="icon">🔗</span>
-                        <span class="name">TCP</span>
-                        <span class="badge">传输控制</span>
+                        <span class="icon">🖥️</span>
+                        <span class="name">Inner Ethernet</span>
+                        <span class="badge">L2 Overlay</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 悬停展开 —</span>
-                        <div class="inner-row net-layer null-layer">
-                            <span class="tag">🌐 网络</span>
-                            <span class="desc"><span class="null-box">空（不转发）</span></span>
+                        <span class="collapsed-hint">— Hover to expand —</span>
+                        <div class="inner-row net-layer">
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">vSwitch forwarding between tenant VMs</span> <span class="dim">(simple network layer)</span></span>
                         </div>
                         <div class="inner-row link-layer">
-                            <span class="tag">📦 链路</span>
-                            <span class="desc"><span class="hl">校验和</span> <span class="hl">重传</span> <span class="hl">流控</span> <span class="hl">端口复用</span></span>
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">MAC Addressing</span> <span class="hl">802.1Q VLAN</span> <span class="hl">CRC</span></span>
                         </div>
                     </div>
-                    <div class="layer-divider" id="divider-tcp"></div>
+                    <div class="layer-divider" id="divider-innereth"></div>
                 </div>
 
-                <!-- IP -->
-                <div class="layer" id="layer-ip" data-protocol="ip">
+                <!-- VXLAN overlay -->
+                <div class="layer" id="layer-vxlan" data-protocol="vxlan">
+                    <div class="layer-name-bar">
+                        <span class="icon">🌉</span>
+                        <span class="name">VXLAN</span>
+                        <span class="badge">VNI 24-bit</span>
+                    </div>
+                    <div class="layer-body">
+                        <span class="collapsed-hint">— Hover to expand —</span>
+                        <div class="inner-row net-layer">
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">Forward between VTEPs across the underlay</span> <span class="dim">(encapsulate + decapsulate)</span></span>
+                        </div>
+                        <div class="inner-row link-layer">
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">VNI (24-bit)</span> <span class="hl">Flags</span> <span class="hl">UDP 4789</span> <span class="hl">FDB lookup (MAC → VNI → VTEP)</span></span>
+                        </div>
+                    </div>
+                    <div class="layer-divider" id="divider-vxlan"></div>
+                </div>
+
+                <!-- UDP (outer transport) -->
+                <div class="layer" id="layer-udp" data-protocol="udp">
+                    <div class="layer-name-bar">
+                        <span class="icon">🚀</span>
+                        <span class="name">UDP (outer)</span>
+                        <span class="badge">Port 4789</span>
+                    </div>
+                    <div class="layer-body">
+                        <span class="collapsed-hint">— Hover to expand —</span>
+                        <div class="inner-row net-layer null-layer">
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="null-box">Empty (no forwarding)</span></span>
+                        </div>
+                        <div class="inner-row link-layer">
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">Checksum</span> <span class="hl">Port Demux</span> <span class="dim">(carrier for VXLAN)</span></span>
+                        </div>
+                    </div>
+                    <div class="layer-divider" id="divider-udp"></div>
+                </div>
+
+                <!-- Outer IP (underlay) -->
+                <div class="layer" id="layer-outerip" data-protocol="outerip">
                     <div class="layer-name-bar">
                         <span class="icon">🌍</span>
-                        <span class="name">IP</span>
-                        <span class="badge">互联网协议</span>
+                        <span class="name">Outer IP</span>
+                        <span class="badge">Underlay</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 悬停展开 —</span>
+                        <span class="collapsed-hint">— Hover to expand —</span>
                         <div class="inner-row net-layer">
-                            <span class="tag">🌐 网络</span>
-                            <span class="desc"><span class="hl">路由器跨网段转发</span></span>
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">Underlay routing across the physical network</span> <span class="dim">(routers, switches, IP fabric)</span></span>
                         </div>
                         <div class="inner-row link-layer">
-                            <span class="tag">📦 链路</span>
-                            <span class="desc"><span class="hl">分片重组</span> <span class="hl">协议号复用</span> <span class="hl">头部校验</span></span>
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">Fragmentation</span> <span class="hl">TTL</span> <span class="hl">Header Checksum</span></span>
                         </div>
                     </div>
-                    <div class="layer-divider" id="divider-ip"></div>
+                    <div class="layer-divider" id="divider-outerip"></div>
                 </div>
 
-                <!-- 以太网 -->
+                <!-- Outer Ethernet -->
                 <div class="layer" id="layer-eth" data-protocol="eth">
                     <div class="layer-name-bar">
                         <span class="icon">🔌</span>
-                        <span class="name">以太网</span>
+                        <span class="name">Outer Ethernet</span>
                         <span class="badge">IEEE 802.3</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 悬停展开 —</span>
+                        <span class="collapsed-hint">— Hover to expand —</span>
                         <div class="inner-row net-layer">
-                            <span class="tag">🌐 网络</span>
-                            <span class="desc"><span class="hl">网桥泛洪转发</span> <span class="dim">（简单网络层）</span></span>
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">Bridge flooding forwarding</span> <span class="dim">(simple network layer)</span></span>
                         </div>
                         <div class="inner-row link-layer">
-                            <span class="tag">📦 链路</span>
-                            <span class="desc"><span class="hl">CRC校验</span> <span class="hl">碰撞检测</span> <span class="hl">MAC寻址</span></span>
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">CRC</span> <span class="hl">Collision Detection</span> <span class="hl">MAC Addressing</span></span>
                         </div>
                     </div>
                     <div class="layer-divider" id="divider-eth"></div>
                 </div>
 
-                <!-- 编码调制层 -->
+                <!-- Coding / Modulation layer -->
                 <div class="layer layer-physical" id="layer-physical" data-protocol="physical">
                     <div class="layer-name-bar">
                         <span class="icon">⚡</span>
-                        <span class="name">编码调制层</span>
-                        <span class="badge">编码·调制</span>
+                        <span class="name">Encoding/Mod.</span>
+                        <span class="badge">Encoding · Modulation</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 悬停展开 —</span>
+                        <span class="collapsed-hint">— Hover to expand —</span>
                         <div class="inner-row net-layer">
-                            <span class="tag">🌐 网络</span>
-                            <span class="desc"><span class="hl">信号整形、放大、再生、转接（中继器、光放大器）</span> <span class="dim">（极简网络层 · 仅单向转发）</span></span>
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">Signal shaping, amplifying, regeneration, relay</span> <span class="dim">(repeaters, optical amplifiers · minimal net layer, one-way forwarding)</span></span>
                         </div>
                         <div class="inner-row link-layer">
-                            <span class="tag">📦 链路</span>
-                            <span class="desc"><span class="hl">数字 ↔ 物理信号映射</span> <span class="dim">（编码调制：NRZ/曼彻斯特/ASK/FSK/PSK/QAM）</span></span>
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">Digital ↔ physical signal mapping</span> <span class="dim">(NRZ/Manchester/ASK/FSK/PSK/QAM)</span></span>
                         </div>
                     </div>
                     <div class="layer-divider" id="divider-physical"></div>
                 </div>
 
-                <!-- 介质层 -->
+                <!-- Medium layer -->
                 <div class="layer" id="layer-medium" data-protocol="medium">
                     <div class="layer-name-bar">
                         <span class="icon">🧵</span>
-                        <span class="name">介质层</span>
-                        <span class="badge">传输介质</span>
+                        <span class="name">Medium</span>
+                        <span class="badge">Transmission Medium</span>
                     </div>
                     <div class="layer-body">
-                        <span class="collapsed-hint">— 悬停展开 —</span>
+                        <span class="collapsed-hint">— Hover to expand —</span>
                         <div class="inner-row net-layer">
-                            <span class="tag">🌐 网络</span>
-                            <span class="desc"><span class="hl">光纤熔接</span> <span class="hl">机械接续</span> <span class="hl">无线中继转发</span> <span class="dim">（配线架/基站/微波中继/卫星转发器）</span></span>
+                            <span class="tag">🌐 Net</span>
+                            <span class="desc"><span class="hl">Fiber splicing</span> <span class="hl">Mechanical joint</span> <span class="hl">Wireless relay</span> <span class="dim">(patch panels / base stations / microwave / satellite transponders)</span></span>
                         </div>
                         <div class="inner-row link-layer">
-                            <span class="tag">📦 链路</span>
-                            <span class="desc"><span class="hl">铜线</span> <span class="hl">光纤</span> <span class="hl">同轴电缆</span> <span class="hl">电磁波</span> <span class="dim">（传输介质 · 含无线）</span></span>
+                            <span class="tag">📦 Link</span>
+                            <span class="desc"><span class="hl">Copper</span> <span class="hl">Fiber</span> <span class="hl">Coaxial</span> <span class="hl">Radio waves</span> <span class="dim">(physical medium · incl. wireless)</span></span>
                         </div>
                     </div>
                     <div class="layer-divider" id="divider-medium"></div>
@@ -643,13 +695,13 @@
             </div>
         </div>
 
-        <!-- ====== 右侧：标尺（无标题栏） ====== -->
+        <!-- ====== Right: ruler (no header) ====== -->
         <div class="right-panel dimmed" id="rulerPanel">
             <div class="ruler-body" id="rulerBody">
-                <!-- 主竖线 -->
+                <!-- Main vertical line -->
                 <div class="ruler-line" id="rulerLine"></div>
 
-                <!-- 3条十字线 -->
+                <!-- 3 crosshairs -->
                 <div class="ruler-cross" id="cross-network-transport">
                     <div class="hline" id="hline-network-transport"></div>
                     <div class="vmark" id="vmark-network-transport"></div>
@@ -663,67 +715,77 @@
                     <div class="vmark" id="vmark-bearing-link"></div>
                 </div>
 
-                <!-- 4个文字标签 -->
-                <span class="ruler-label" id="label-transport">传输层</span>
-                <span class="ruler-label" id="label-network">网络层</span>
-                <span class="ruler-label" id="label-link">数据链路层</span>
-                <span class="ruler-label" id="label-bearing">承载层</span>
+                <!-- 4 text labels -->
+                <span class="ruler-label" id="label-transport">Transport Layer</span>
+                <span class="ruler-label" id="label-network">Network Layer</span>
+                <span class="ruler-label" id="label-link">Data Link Layer</span>
+                <span class="ruler-label" id="label-bearing">Bearer Layer</span>
             </div>
         </div>
 
     </div>
 
     <div class="hint">
-        <span>🖱 <strong>悬停</strong> 左侧协议层，右侧标尺动态展示当前协议视角下的协议栈</span>
+        <span>🖱 <strong>Hover</strong> a protocol layer on the left — the ruler on the right dynamically shows the stack from that protocol's perspective</span>
     </div>
 </div>
 
 <script>
     (function() {
 
-        // 协议索引: 0=数据层(静态), 1=HTTP层, 2=TCP, 3=IP, 4=以太网, 5=编码调制层, 6=介质层
+        // Protocol index: 0=Data layer (static), 1=Inner IP, 2=Inner Ethernet, 3=VXLAN, 4=UDP (outer), 5=Outer IP, 6=Outer Ethernet, 7=Coding/Modulation, 8=Medium
 
-        // 每个协议的标尺映射：
-        // network_transport: 网络层↔传输层 分界 → 对准当前协议层的上边界 (top)
-        // link_network: 数据链路层↔网络层 分界 → 对准当前协议层内部横线 (divider)
-        // bearing_link: 承载层↔数据链路层 分界 → 对准当前协议层的下边界 (bottom)
+        // Per-protocol ruler mapping:
+        // network_transport: Network ↔ Transport boundary -> aligns to the current layer's top edge (top)
+        // link_network: Data Link ↔ Network boundary        -> aligns to the current layer's internal divider
+        // bearing_link: Bearer ↔ Data Link boundary         -> aligns to the current layer's bottom edge (bottom)
         const RULER_MAPPINGS = {
-            // 数据层：扁平、无内部结构，将全部下层视为承载层
-            // → 三条分界都对准数据层的下边界（承载层起始处）
+            // Data layer: flat, no internal structure; every layer below is treated as bearer
+            // -> all three boundaries align to the data layer's bottom edge (where the bearer starts)
             'data': {
                 network_transport: { targetIndex: 0, boundary: 'bottom', state: null },
                 link_network: { targetIndex: 0, boundary: 'bottom', state: null },
                 bearing_link: { targetIndex: 0, boundary: 'bottom', state: null }
             },
-            'app': {
-                network_transport: { targetIndex: 1, boundary: 'top', state: null },
-                link_network: { targetIndex: 1, boundary: 'divider', state: 'highlight' },
+            'innerip': {
+                network_transport: { targetIndex: 1, boundary: 'top', state: 'glow' },
+                link_network: { targetIndex: 1, boundary: 'divider', state: 'glow' },
                 bearing_link: { targetIndex: 1, boundary: 'bottom', state: 'highlight' }
             },
-            'tcp': {
-                network_transport: { targetIndex: 2, boundary: 'top', state: null },
+            'innereth': {
+                network_transport: { targetIndex: 2, boundary: 'top', state: 'glow' },
                 link_network: { targetIndex: 2, boundary: 'divider', state: 'glow' },
                 bearing_link: { targetIndex: 2, boundary: 'bottom', state: 'highlight' }
             },
-            'ip': {
+            'vxlan': {
                 network_transport: { targetIndex: 3, boundary: 'top', state: 'glow' },
                 link_network: { targetIndex: 3, boundary: 'divider', state: 'glow' },
                 bearing_link: { targetIndex: 3, boundary: 'bottom', state: 'highlight' }
             },
-            'eth': {
-                network_transport: { targetIndex: 4, boundary: 'top', state: 'glow' },
+            'udp': {
+                network_transport: { targetIndex: 4, boundary: 'top', state: null },
                 link_network: { targetIndex: 4, boundary: 'divider', state: 'glow' },
                 bearing_link: { targetIndex: 4, boundary: 'bottom', state: 'highlight' }
             },
+            'outerip': {
+                network_transport: { targetIndex: 5, boundary: 'top', state: 'glow' },
+                link_network: { targetIndex: 5, boundary: 'divider', state: 'glow' },
+                bearing_link: { targetIndex: 5, boundary: 'bottom', state: 'highlight' }
+            },
+            'eth': {
+                network_transport: { targetIndex: 6, boundary: 'top', state: 'glow' },
+                link_network: { targetIndex: 6, boundary: 'divider', state: 'glow' },
+                bearing_link: { targetIndex: 6, boundary: 'bottom', state: 'highlight' }
+            },
             'physical': {
-                network_transport: { targetIndex: 5, boundary: 'top', state: null },
-                link_network: { targetIndex: 5, boundary: 'divider', state: 'highlight' },
-                bearing_link: { targetIndex: 5, boundary: 'bottom', state: null }
+                network_transport: { targetIndex: 7, boundary: 'top', state: null },
+                link_network: { targetIndex: 7, boundary: 'divider', state: 'highlight' },
+                bearing_link: { targetIndex: 7, boundary: 'bottom', state: null }
             },
             'medium': {
-                network_transport: { targetIndex: 6, boundary: 'top', state: null },
-                link_network: { targetIndex: 6, boundary: 'divider', state: 'highlight' },
-                bearing_link: { targetIndex: 6, boundary: 'bottom', state: null }
+                network_transport: { targetIndex: 8, boundary: 'top', state: null },
+                link_network: { targetIndex: 8, boundary: 'divider', state: 'highlight' },
+                bearing_link: { targetIndex: 8, boundary: 'bottom', state: null }
             }
         };
 
@@ -751,9 +813,11 @@
         };
         const dividers = {
             data: document.getElementById('divider-data'),
-            app: document.getElementById('divider-app'),
-            tcp: document.getElementById('divider-tcp'),
-            ip: document.getElementById('divider-ip'),
+            innerip: document.getElementById('divider-innerip'),
+            innereth: document.getElementById('divider-innereth'),
+            vxlan: document.getElementById('divider-vxlan'),
+            udp: document.getElementById('divider-udp'),
+            outerip: document.getElementById('divider-outerip'),
             eth: document.getElementById('divider-eth'),
             physical: document.getElementById('divider-physical'),
             medium: document.getElementById('divider-medium')
@@ -769,27 +833,33 @@
         };
 
         // ============================================================
-        //  获取协议栈中各层"稳定状态"的边界位置（百分比）
-        //  注意：十字线 top 的百分比是相对 .ruler-body 定位的，
-        //  因此这里直接以 rulerBody 为参照做像素级换算，
-        //  避免因左右面板高度/边框/内边距差异导致不对齐。
+        //  Compute each layer's boundary position (as a percentage) in
+        //  the stack's "stable" state.
+        //  Note: the crosshair `top` is positioned relative to
+        //  .ruler-body, so we convert directly in pixels using rulerBody
+        //  as the reference, avoiding misalignment caused by different
+        //  heights/borders/padding between the left and right panels.
         //
-        //  为什么按"稳定布局"计算而不是实时测量？
-        //  实时测量在 .layer 的高度过渡（44px↔88px）进行中调用
-        //  会拿到中间态几何，导致十字线先被定位到错误的"压缩"
-        //  位置，过渡结束后才被 transitionend 纠正回来，表现为
-        //  "先缩至最小再展开"的跳动。改为按最终布局直接计算后，
-        //  十字线会一次性对准目标位置，跳过这段中间动画。
+        //  Why compute against the "stable layout" instead of measuring
+        //  live geometry? While the .layer height transition
+        //  (44px <-> 88px) is running, live measurements return
+        //  intermediate geometry, so the crosshair would first be placed
+        //  at the wrong "compressed" position and only be corrected by
+        //  transitionend afterwards — appearing to "shrink then expand".
+        //  Computing against the final layout places the crosshair at the
+        //  target position in one step, skipping that intermediate frame.
         // ============================================================
 
-        // 布局常量（收起态层高 / 层间距 / 右侧面板上下边框），
-        // 从计算样式读取以兼容响应式断点；在初始化时采集。
+        // Layout constants (collapsed layer height / gap / right panel
+        // vertical borders), read from computed styles to stay compatible
+        // with responsive breakpoints; captured once at init.
         let LAYOUT = captureLayout();
 
         function captureLayout() {
             const stack = document.getElementById('stack');
-            // 收起态高度取所有层的最小值：过渡中的层高度更大，
-            // 取最小值可稳定得到 44px（窄屏 38px）
+            // Take the minimum of all layer heights as the collapsed height:
+            // layers mid-transition are taller, and the minimum stably gives
+            // 44px (38px on narrow screens)
             const collapsed = Math.min(...Array.from(layerEls).map(l =>
                 parseFloat(getComputedStyle(l).height) || 0
             )) || 44;
@@ -803,15 +873,16 @@
         function getLayerBoundaries() {
             const stack = document.getElementById('stack');
             const rulerRect = rulerBody.getBoundingClientRect();
-            // 栈顶相对标尺顶部的偏移（两层均位于各自面板顶部，此值为常量，约 -2px）
+            // Offset of the stack top relative to the ruler top (both panels
+            // start at their own top, so this is a constant, about -2px)
             const stackTop = stack.getBoundingClientRect().top - rulerRect.top;
             const { collapsed, gap, borderV } = LAYOUT;
-            const expanded = collapsed * 2; // .layer.active 高度 = 收起态 × 2
+            const expanded = collapsed * 2; // .layer.active height = collapsed × 2
 
             const activeEl = document.querySelector('.layer.active');
             const activeIdx = activeEl ? Array.prototype.indexOf.call(layerEls, activeEl) : -1;
 
-            // 稳定状态下标尺总高度 = 栈总高 - 右侧面板上下边框
+            // Stable ruler height = total stack height - right panel vertical borders
             const n = layerEls.length;
             const finalStackH = activeIdx >= 0
                 ? expanded + (n - 1) * collapsed + (n - 1) * gap
@@ -824,10 +895,12 @@
             layerEls.forEach((el, j) => {
                 const h = (j === activeIdx) ? expanded : collapsed;
                 const layerTopPx = stackTop + y;
-                // top/bottom 使用层本身边界（完整高度），保证右侧标尺区域不被压缩
+                // top/bottom use the layer's own full height, so the right
+                // ruler area is not compressed
                 const top = layerTopPx / finalRulerH;
                 const bottom = (layerTopPx + h) / finalRulerH;
-                // divider 定位到两行间隙中点（两行居中后即层中点），与左侧分隔线对齐
+                // divider is placed at the midpoint of the gap between the
+                // two rows (layer center once centered), matching the left divider
                 const divider = (layerTopPx + LAYER_BORDER_TOP + DIVIDER_OFFSET) / finalRulerH;
                 boundaries.push({ top, bottom, divider });
                 y += h + gap;
@@ -836,9 +909,10 @@
         }
 
         // ============================================================
-        //  根据各层名称栏的完整内容（图标 + 名称 + 徽标）宽度，
-        //  自动计算最左列的宽度，并通过 CSS 变量 --namebar-w 统一应用，
-        //  避免硬编码宽度导致长名称溢出。
+        //  Measure the full content width of each layer's name bar
+        //  (icon + name + badge) and set the shared left-column width via
+        //  the CSS variable --namebar-w, avoiding overflow of long names
+        //  with a hard-coded width.
         // ============================================================
         function updateNameBarWidth() {
             let maxW = 0;
@@ -846,7 +920,8 @@
                 const bar = l.querySelector('.layer-name-bar');
                 const badge = l.querySelector('.badge');
                 if (!bar || !badge) return;
-                // 临时显示徽标、并让名称栏按内容自动撑宽，测量自然宽度后恢复
+                // Temporarily show the badge and let the name bar grow to
+                // content, measure the natural width, then restore
                 const prevBadge = badge.style.display;
                 const prevFlex = bar.style.flex;
                 badge.style.display = 'inline-block';
@@ -860,13 +935,14 @@
 
         function updateRuler(protocolKey) {
             const mapping = RULER_MAPPINGS[protocolKey];
-            // 最上层（应用层）之上没有传输层；最下层（介质层）之下没有承载层。
-            // 悬停这两层时，标尺中隐藏对应的"传输层"/"承载层"标签。
+            // There is no transport layer above the top layer and no bearer
+            // layer below the bottom layer. Hovering those two layers hides
+            // the corresponding "Transport"/"Bearer" labels on the ruler.
             const firstLayer = layerEls[0];
             const lastLayer = layerEls[layerEls.length - 1];
             const isTopLayer = !!(mapping && protocolKey === firstLayer.dataset.protocol);
             const isBottomLayer = !!(mapping && protocolKey === lastLayer.dataset.protocol);
-            // 数据层：扁平、无内部结构，只保留承载层
+            // Data layer: flat, no internal structure, only the bearer layer remains
             const isFlatLayer = protocolKey === 'data';
             if (!mapping) {
                 const crossNames = ['network_transport', 'link_network', 'bearing_link'];
@@ -876,7 +952,7 @@
                     const cross = crosses[name];
                     hline.className = 'hline';
                     vmark.className = 'vmark';
-                    cross.style.display = ''; // 复位时恢复所有分界线可见
+                    cross.style.display = ''; // restore all boundary lines on reset
                     const defaultPos = DEFAULT_POSITIONS[name] * 100;
                     cross.style.top = defaultPos + '%';
                 });
@@ -889,16 +965,16 @@
                 Object.keys(labels).forEach(key => {
                     labels[key].className = 'ruler-label';
                     labels[key].style.top = defaultLabelPositions[key] + '%';
-                    labels[key].style.display = ''; // 复位时恢复所有标签可见
+                    labels[key].style.display = ''; // restore all labels on reset
                 });
                 rulerLine.className = 'ruler-line';
                 rulerPanel.classList.remove('active');
-                rulerPanel.classList.add('dimmed'); // 无悬停：标尺变暗
+                rulerPanel.classList.add('dimmed'); // nothing hovered: ruler dims
                 return;
             }
 
             rulerPanel.classList.add('active');
-            rulerPanel.classList.remove('dimmed'); // 有悬停：标尺恢复清晰
+            rulerPanel.classList.remove('dimmed'); // something hovered: ruler sharpens
             rulerLine.className = 'ruler-line active';
 
             const boundaries = getLayerBoundaries();
@@ -935,8 +1011,9 @@
                 hline.className = 'hline';
                 vmark.className = 'vmark';
 
-                // 传输层不存在时（最上层）隐藏其上方分界线 network_transport；
-                // 承载层不存在时（最下层）隐藏其上方分界线 bearing_link
+                // Hide the boundary above when there is no transport layer
+                // (top layer); hide the boundary above when there is no
+                // bearer layer (bottom layer)
                 const hideCross = (name === 'network_transport' && isTopLayer) ||
                                   (name === 'bearing_link' && isBottomLayer);
                 cross.style.display = hideCross ? 'none' : '';
@@ -950,7 +1027,7 @@
                 }
             });
 
-            // 获取3条十字线的实际位置
+            // Read the actual positions of the 3 crosshairs
             const crossPositions = {};
             crossNames.forEach(name => {
                 const cross = crosses[name];
@@ -958,7 +1035,7 @@
                 crossPositions[name] = isNaN(pos) ? 0.25 : pos;
             });
 
-            // 更新4个文字标签的位置
+            // Update the positions of the 4 text labels
             const labelPositions = {
                 transport: (0 + crossPositions.network_transport) / 2,
                 network: (crossPositions.network_transport + crossPositions.link_network) / 2,
@@ -980,13 +1057,16 @@
                 const clampedPos = Math.max(0.02, Math.min(0.98, pos));
                 label.style.top = (clampedPos * 100) + '%';
                 label.className = 'ruler-label';
-                // 数据层（扁平）：无传输/网络/链路子层，只保留承载层
+                // Data layer (flat): no transport/network/link sublayers,
+                // only the bearer layer remains
                 if (isFlatLayer) {
                     label.style.display = (key === 'bearing') ? '' : 'none';
                 } else {
-                    // 先恢复所有标签可见（避免残留数据层隐藏的状态）
+                    // Restore all labels first (avoid leftover hidden state
+                    // from the flat data layer)
                     label.style.display = '';
-                    // 最上层之上没有传输层、最下层之下没有承载层 → 隐藏对应标签
+                    // No transport above the top layer, no bearer below the
+                    // bottom layer -> hide the corresponding labels
                     if (key === 'transport') {
                         label.style.display = isTopLayer ? 'none' : '';
                     } else if (key === 'bearing') {
@@ -1001,23 +1081,28 @@
             });
         }
 
-        // 更新左侧分隔线
-        // 分隔线相对层顶部（内边距盒）的固定偏移（px）：
-        // = "网络层"与"数据链路层"两行间隙中心 − 层顶部。
-        // 所有可展开层内部结构一致，因此该偏移是常量，与层在栈中的位置无关，
-        // 只需在初始化/缩放时测量一次。直接使用常量可避免过渡中测量导致的
-        // "先升后降"的中间动画。
-        let DIVIDER_OFFSET = 46;      // 分隔线相对层内边距盒顶部的偏移（updateDividers 用）
-        let LAYER_BORDER_TOP = 2;     // 层上边框宽度（getLayerBoundaries 换算分隔线绝对位置用）
+        // Update the left dividers
+        // Fixed offset of the divider relative to the layer's top (padding
+        // box) in px:
+        // = center of the gap between the "network" and "data link" rows
+        //   minus the layer top.
+        // All expandable layers share the same internal structure, so this
+        // offset is constant and independent of the layer's position in the
+        // stack; it only needs to be measured once at init/resize. Using a
+        // constant avoids the "rise then fall" intermediate animation caused
+        // by measuring during a transition.
+        let DIVIDER_OFFSET = 46;      // divider offset from the top of the layer's padding box (used by updateDividers)
+        let LAYER_BORDER_TOP = 2;     // layer top border width (used by getLayerBoundaries for the absolute divider position)
 
         function measureDividerOffset() {
-            const sample = document.getElementById('layer-app');
+            const sample = document.getElementById('layer-innerip');
             const body = sample && sample.querySelector('.layer-body');
             const netRow = body && body.querySelector('.inner-row.net-layer');
             const linkRow = body && body.querySelector('.inner-row.link-layer');
             if (!sample || !body || !netRow || !linkRow) return 46;
-            // 临时禁用层与 body 的过渡并展开，直接读取最终布局
-            // （同步测量后恢复，无闪烁）
+            // Temporarily disable the layer & body transitions and expand,
+            // then read the final layout (measured synchronously and
+            // restored, no flicker)
             const prevSampleTrans = sample.style.transition;
             const prevBodyTrans = body.style.transition;
             sample.style.transition = 'none';
@@ -1053,16 +1138,17 @@
             if (!divider) return;
 
             divider.style.display = 'block';
-            // 直接使用固定偏移（最终位置），不测量过渡中的几何
+            // Use the fixed offset directly (final position), without
+            // measuring transition geometry
             divider.style.top = DIVIDER_OFFSET + 'px';
             divider.style.transform = 'translateY(-50%)';
         }
 
-        // 使用 requestAnimationFrame 确保布局稳定
+        // Use requestAnimationFrame to ensure the layout is stable
         function updateAll(protocolKey) {
-            // 先让浏览器完成布局更新
+            // Let the browser finish layout updates first
             requestAnimationFrame(() => {
-                // 再等一帧确保所有尺寸已经稳定
+                // Wait one more frame so all sizes are stable
                 requestAnimationFrame(() => {
                     updateRuler(protocolKey);
                     updateDividers(protocolKey);
@@ -1071,12 +1157,14 @@
         }
 
         // ============================================================
-        //  交互
-        //  复位采用"宽限延迟"：鼠标在协议之间移动时，即使短暂
-        //  经过层间空隙/面板间隙，也不会立刻触发复位（缩至最小），
-        //  而是等待宽限期结束且仍没有悬停在任何协议层上才复位。
-        //  这样协议间的切换会直接从 A 状态过渡到 B 状态，
-        //  跳过"先缩至最小再展开"的中间动画。
+        //  Interaction
+        //  Reset uses a "grace delay": when the mouse moves between
+        //  protocols, even a brief pass over a gap between layers / panels
+        //  will not immediately trigger a reset (shrink to minimum);
+        //  it waits for the grace period to elapse with still nothing
+        //  hovered before resetting. Switching between protocols therefore
+        //  transitions directly from state A to state B, skipping the
+        //  intermediate "shrink to minimum then expand" animation.
         // ============================================================
         let resetTimer = null;
 
@@ -1094,14 +1182,15 @@
 
         layerEls.forEach((layer) => {
             layer.addEventListener('mouseenter', function(e) {
-                // 进入新协议：取消任何待执行的复位
+                // Entering a new protocol: cancel any pending reset
                 clearTimeout(resetTimer);
 
                 const protocol = this.dataset.protocol;
                 if (!protocol) return;
 
-                // 静态层（数据层）：不展开、没有内部结构，
-                // 悬停时清除高亮，并在标尺中展示"所有下层 = 承载层"
+                // Static layer (data layer): does not expand and has no
+                // internal structure. On hover, clear highlights and show
+                // "all lower layers = bearer" on the ruler.
                 if (this.classList.contains('layer-static')) {
                     layerEls.forEach(l => {
                         l.classList.remove('active', 'inactive');
@@ -1124,16 +1213,18 @@
             });
 
             layer.addEventListener('mouseleave', function(e) {
-                // 250ms 宽限期：期间进入其他协议则取消复位
+                // 250ms grace period: entering another protocol within it
+                // cancels the reset
                 scheduleReset(250);
             });
         });
 
         // ============================================================
-        //  高度过渡结束后重新对齐
-        //  .layer.active 的高度由 44px 过渡到 88px 需要 0.4s，
-        //  若在过渡中途测量会得到不准确的百分比，因此在高度过渡
-        //  结束后（几何已稳定）再重算一次，确保最终完全对齐。
+        //  Re-align after the height transition finishes
+        //  .layer.active height transitions from 44px to 88px over 0.4s;
+        //  measuring mid-transition yields inaccurate percentages, so once
+        //  the transition ends (geometry is stable) we recompute once to
+        //  guarantee perfect final alignment.
         // ============================================================
         let recalcScheduled = false;
         layerEls.forEach((layer) => {
@@ -1156,7 +1247,8 @@
 
         const container = document.querySelector('.container');
         container.addEventListener('mouseleave', function() {
-            // 离开容器视为真正离开，用更短的宽限期尽快复位
+            // Leaving the container counts as really leaving; use a shorter
+            // grace period to reset promptly
             scheduleReset(40);
         });
 
@@ -1164,7 +1256,8 @@
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
-                // 重新采集布局常量（窄屏断点会改变层高）、最左列宽度与分隔线偏移
+                // Re-capture layout constants (narrow breakpoints change the
+                // layer height), the left-column width and the divider offset
                 LAYOUT = captureLayout();
                 updateNameBarWidth();
                 DIVIDER_OFFSET = measureDividerOffset();
@@ -1179,7 +1272,7 @@
         });
 
         // ============================================================
-        //  初始化：自动计算最左列宽度
+        //  Initialization: auto-compute the left-column width
         // ============================================================
         updateNameBarWidth();
         DIVIDER_OFFSET = measureDividerOffset();
@@ -1187,10 +1280,11 @@
             document.fonts.ready.then(updateNameBarWidth);
         }
 
-        // 初始为无悬停状态：不自动高亮任何协议，
-        // 右侧标尺保持 dimmed 暗色调，等待用户悬停。
-        // 页面加载后立即应用标尺的中性布局，让标签与分界线
-        // 一开始就位于默认位置，而不是在首次悬停前堆叠在标尺顶部。
+        // Initially in the no-hover state: no protocol is auto-highlighted
+        // and the right ruler stays dimmed until the user hovers.
+        // Apply the neutral ruler layout immediately on load so the labels
+        // and crosshairs are placed at their default positions right away,
+        // instead of stacking at the top of the ruler before any hover.
         updateRuler(null);
 
     })();
